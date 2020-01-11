@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 
 public class SolitaireFrame extends JFrame {
     public SolitaireFrame() {
@@ -10,5 +11,6 @@ public class SolitaireFrame extends JFrame {
 
     public static void main(String[]args) {
         SolitaireFrame frame = new SolitaireFrame();
+        frame.setPreferredSize(new Dimension(500,500));
     }
 }

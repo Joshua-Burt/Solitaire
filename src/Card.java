@@ -12,7 +12,7 @@ public class Card {
         this.index = index;
         this.suit = suit.toUpperCase();
 
-        File file = new File("img/" + index + suit.toUpperCase() + ".png");
+        File file = new File("src//img//" + index + suit.toUpperCase() + ".png");
         img = ImageIO.read(file);
     }
 
