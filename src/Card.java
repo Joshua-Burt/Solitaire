@@ -1,4 +1,5 @@
-package PACKAGE_NAME;
-
 public class Card {
+    public Card(int index, String suit) {
+
+    }
 }
