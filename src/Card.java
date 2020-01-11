@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 
 public class Card {
-    private int index;
+    private String index;
     private String suit;
     private BufferedImage img;
 
-    public Card(int index, String suit) throws IOException {
+    public Card(String index, String suit) throws IOException {
         this.index = index;
         this.suit = suit.toUpperCase();
 
@@ -16,7 +16,7 @@ public class Card {
         img = ImageIO.read(file);
     }
 
-    public int getIndex() {
+    public String getIndex() {
         return index;
     }
 
