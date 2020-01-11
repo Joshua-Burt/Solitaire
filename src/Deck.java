@@ -17,6 +17,7 @@ public class Deck extends ArrayList<Card> {
             for (String index : indices) {
                 try {
                     Card card = new Card(index, suit);
+                    System.out.println(index + " " + suit);
                     this.add(card);
                 } catch (IOException e) {
                     e.printStackTrace();

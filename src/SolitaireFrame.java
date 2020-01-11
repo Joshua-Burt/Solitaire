@@ -7,4 +7,8 @@ public class SolitaireFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
+
+    public static void main(String[]args) {
+        SolitaireFrame frame = new SolitaireFrame();
+    }
 }
