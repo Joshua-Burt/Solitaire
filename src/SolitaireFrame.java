@@ -11,7 +11,7 @@ public class SolitaireFrame extends JFrame {
 
     public static void main(String[]args) {
         SolitaireFrame frame = new SolitaireFrame();
-        frame.setSize(new Dimension(740,500));
-        frame.setResizable(false);
+        frame.setSize(new Dimension(795,500));
+        frame.setMinimumSize(new Dimension(795,500));
     }
 }
