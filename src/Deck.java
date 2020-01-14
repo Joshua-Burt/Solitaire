@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Deck extends ArrayList<Card> {
     String[] suits;
@@ -22,6 +23,17 @@ public class Deck extends ArrayList<Card> {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public void shuffle() {
+        Random rand = new Random();
+
+        for (int i = 0; i < this.size(); i++) {
+            int randomIndexToSwap = rand.nextInt(this.size());
+            Card temp = this.get(randomIndexToSwap);
+            this.set(randomIndexToSwap, this.get(i));
+            this.set(i, temp);
         }
     }
 }

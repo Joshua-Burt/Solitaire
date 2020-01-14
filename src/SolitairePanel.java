@@ -10,8 +10,13 @@ public class SolitairePanel extends JPanel {
     Deck deck;
 
     public SolitairePanel() {
-        deck = new Deck();
         setBackground(new Color(27, 117, 33));
+        prepareDeck();
+    }
+
+    private void prepareDeck() {
+        deck = new Deck();
+        deck.shuffle();
 
         try {
             File file = new File("src/img/cards/cardOutline.png");
@@ -42,18 +47,13 @@ public class SolitairePanel extends JPanel {
 
         //Top card outlines
         g.drawImage(cardOutline, 10, 10, null);
-        g.drawImage(cardOutline, panelWidth - cardDist * 4, 10, null);
-        g.drawImage(cardOutline, panelWidth - cardDist * 3, 10, null);
-        g.drawImage(cardOutline, panelWidth - cardDist * 2, 10, null);
-        g.drawImage(cardOutline, panelWidth - cardDist, 10, null);
+        for(int i = 0; i < 5; i++) {
+            g.drawImage(cardOutline, panelWidth - cardDist * i, 10, null);
+        }
 
         //Bottom card outlines
-        g.drawImage(cardOutline, 10, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist * 2, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist * 3, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist * 4, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist * 5, panelHeight / 2, null);
-        g.drawImage(cardOutline, 10 + cardDist * 6, panelHeight / 2, null);
+        for(int i = 0; i < 7; i++) {
+            g.drawImage(cardOutline, 10 + cardDist * i, panelHeight / 2, null);
+        }
     }
 }
