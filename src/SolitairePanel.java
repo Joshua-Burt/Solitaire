@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.jetbrains.annotations.NotNull;
-
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
     Deck deck;
@@ -33,16 +31,12 @@ public class SolitairePanel extends JPanel {
 
     private ArrayList<Point> getCardDrawLocations(int panelWidth, int panelHeight) {
         ArrayList<Point> arr = new ArrayList<>();
-        int cardOutlineDist = 110;
-
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, right and goes to the left
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 7; i++) {
             for(int o = 6; o >= i; o--) {
-                Point p = new Point();
-                p.setLocation(15 + 110 * o, panelHeight / 2 + 5 + (20 * i));
-                arr.add(p);
+                arr.add(new Point(15 + 110 * o, panelHeight / 2 + 5 + (20 * i)));
             }
         }
 
@@ -71,29 +65,27 @@ public class SolitairePanel extends JPanel {
 
                 //TODO: add ability for each card to know where it is in the piles and which pile
 
-                if(i <= 27) {
-                    if(i != 0) {
-                        try {
+                try {
+                    if (i <= 27) {
+                        if (i == 6 || i == 12 || i == 17 || i == 21 || i == 24 || i == 26 || i == 27) {
+                            card.setFaceDown(false);
+                        } else {
                             card.setFaceDown(true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
-                    }
-                    g.drawImage(card.getImg(), cardDrawLocations.get(i).x, cardDrawLocations.get(i).y, 90, 120, null);
 
-                } else {
-                    try {
+                        g.drawImage(card.getImg(), cardDrawLocations.get(i).x, cardDrawLocations.get(i).y, 90, 120, null);
+                    } else {
                         card.setFaceDown(true);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        g.drawImage(card.getImg(), 15, 15, 90, 120, null);
                     }
-                    g.drawImage(card.getImg(), 15, 15, 90, 120, null);
+                } catch(IOException e){
+                    e.printStackTrace();
                 }
             }
         }
     }
 
-    private void drawCardOutlines(@NotNull Graphics g, int panelWidth, int panelHeight) {
+    private void drawCardOutlines(Graphics g, int panelWidth, int panelHeight) {
         // Distance between each card outline image
         int cardOutlineDist = 110;
 
