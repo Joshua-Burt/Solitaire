@@ -14,6 +14,7 @@ public class Deck extends ArrayList<Card> {
     }
 
     private void createCards() {
+        // Two for loops to create each combination of card
         for(String suit : suits) {
             for (String index : indices) {
                 try {
@@ -30,9 +31,9 @@ public class Deck extends ArrayList<Card> {
         Random rand = new Random();
 
         for (int i = 0; i < this.size(); i++) {
-            int randomIndexToSwap = rand.nextInt(this.size());
-            Card temp = this.get(randomIndexToSwap);
-            this.set(randomIndexToSwap, this.get(i));
+            int cardToSwapIndex = rand.nextInt(this.size());
+            Card temp = this.get(cardToSwapIndex);
+            this.set(cardToSwapIndex, this.get(i));
             this.set(i, temp);
         }
     }
