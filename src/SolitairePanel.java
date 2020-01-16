@@ -1,3 +1,7 @@
+import cards.Card;
+import cards.Deck;
+import cards.Pile;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -9,14 +13,26 @@ import java.util.ArrayList;
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
     Deck deck;
+    ArrayList<Pile> piles;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
+        preparePlayField();
         prepareDeck();
     }
 
+    private void preparePlayField() {
+        piles = new ArrayList<>();
+
+        //Creating and adding each arraylist of a pile to the 'piles' arraylist
+        for(int i = 0; i < 8; i++) {
+            Pile pile = new Pile();
+            piles.add(pile);
+        }
+    }
+
     private void prepareDeck() {
-        //Create the Deck object and shuffle it
+        //Create the cards.Deck object and shuffle it
         deck = new Deck();
         deck.shuffle();
 
@@ -29,14 +45,17 @@ public class SolitairePanel extends JPanel {
         }
     }
 
+    //TODO: Find a better way of doing this
     private ArrayList<Point> getCardDrawLocations(int panelWidth, int panelHeight) {
         ArrayList<Point> arr = new ArrayList<>();
+
+        int y = panelHeight / 2 + 5;
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, right and goes to the left
         for(int i = 0; i < 7; i++) {
             for(int o = 6; o >= i; o--) {
-                arr.add(new Point(15 + 110 * o, panelHeight / 2 + 5 + (20 * i)));
+                arr.add(new Point(15 + (110 * o), y + (20 * i)));
             }
         }
 
@@ -64,6 +83,11 @@ public class SolitairePanel extends JPanel {
                 Card card = deck.get(i);
 
                 //TODO: add ability for each card to know where it is in the piles and which pile
+                // Do this by creating an arraylist for each of the seven piles, and will be able to compare
+                // easily, such as the last card will always be able to be picked up and moved, but if multiple
+                // cards are face up in a row AND in order, they can all be moved
+                // Paint will draw each card using it's index in each arraylist
+                // For the pile at the top right, it only needs to be drawn once and not for each card
 
                 try {
                     if (i <= 27) {
