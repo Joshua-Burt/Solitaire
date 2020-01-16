@@ -13,22 +13,13 @@ import java.util.ArrayList;
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
     Deck deck;
-    ArrayList<Pile> piles;
-
+    ArrayList<Pile> bottomPiles, topPiles;
+    Pile discardPile;
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
-        preparePlayField();
         prepareDeck();
-    }
+        preparePiles();
 
-    private void preparePlayField() {
-        piles = new ArrayList<>();
-
-        //Creating and adding each arraylist of a pile to the 'piles' arraylist
-        for(int i = 0; i < 8; i++) {
-            Pile pile = new Pile();
-            piles.add(pile);
-        }
     }
 
     private void prepareDeck() {
@@ -42,6 +33,34 @@ public class SolitairePanel extends JPanel {
             cardOutline = ImageIO.read(file);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void preparePiles() {
+        bottomPiles = new ArrayList<>();
+        topPiles = new ArrayList<>();
+        discardPile = new Pile();
+
+        for(int i = 0; i < 7; i++) {
+            bottomPiles.add(new Pile());
+        }
+        for(int i = 0; i < 4; i++) {
+            bottomPiles.add(new Pile());
+        }
+    }
+
+    private void dealCards() {
+        int workingIndex = 0;
+
+        for(int i = 0; i < 7; i++) {
+            for(int o = 0; o <= i; o++) {
+                bottomPiles.get(i).add(deck.get(workingIndex));
+                workingIndex++;
+            }
+        }
+
+        for(int i = workingIndex; i < deck.size(); i++) {
+            discardPile.add(deck.get(i));
         }
     }
 
