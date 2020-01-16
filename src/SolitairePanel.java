@@ -14,11 +14,10 @@ public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
     Deck deck;
     ArrayList<Pile> bottomPiles, topPiles;
+    ArrayList<Point> bottomRowLocations, topRowLocations;
     Pile discardPile, playableDiscard;
     int panelHeight = 0;
     int panelWidth = 0;
-    ArrayList<Point> bottomRowLocations;
-    ArrayList<Point> topRowLocations;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
@@ -117,18 +116,18 @@ public class SolitairePanel extends JPanel {
 
     private ArrayList<Point> getTopRowLocations() {
         ArrayList<Point> arr = new ArrayList<>();
-        int cardOutlineDist = 110;
+        int cardDist = 110;
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < topPiles.size(); i++) {
-            for (int o = 0; o <= i; o++) {
-                arr.add(new Point());
-            }
+            arr.add(new Point(5 + panelWidth - cardDist * (4 - i), 15));
         }
         return arr;
     }
 
+    //Each paint cycle this will be called to check if the card placements
+    // need to be rearranged
     private void checkPanelSize() {
         if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
             panelWidth = this.getWidth();
@@ -144,33 +143,48 @@ public class SolitairePanel extends JPanel {
 
         drawCardOutlines(g, panelWidth, panelHeight);
 
-        if(bottomPiles != null && topPiles != null & discardPile != null && playableDiscard != null && bottomRowLocations != null) {
-            int workingIndex = 0;
-            for(int i = 0; i < bottomPiles.size(); i++) {
-                if (bottomPiles.get(i).size() != 0) {
-                    for (int o = 0; o <= i; o++) {
-                        Card card = bottomPiles.get(i).get(o);
+        if(bottomPiles != null && topPiles != null & discardPile != null &&
+           playableDiscard != null && bottomRowLocations != null) {
 
-                        g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, 90, 120, null);
-                        workingIndex++;
-                    }
-                }
-            }
-
+            drawBottomRowCards(g);
+            drawTopRowCards(g);
 //            //Add later
 //            for(int i = 0; i < topPiles.size(); i++) {
 //                if(topPiles.get(i) != 0) {
 //                    g.drawImage(topPiles.get(i).get(0).getImg())
 //                }
 //            }
-
             if(discardPile.size() != 0) {
                 //Just draw one card instead of overlaying all of them
                 g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
             }
 
             if(playableDiscard.size() != 0) {
-                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 15, 15, 90, 120, null);
+                //Just draw one card instead of overlaying all of them
+                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, 90, 120, null);
+            }
+        }
+    }
+
+    private void drawBottomRowCards(Graphics g) {
+        int workingIndex = 0;
+
+        for(Pile bottomPile : bottomPiles) {
+            if(bottomPile.size() != 0) {
+                for (Card card : bottomPile) {
+                    g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, 90, 120, null);
+                    workingIndex++;
+                }
+            }
+        }
+    }
+
+    private void drawTopRowCards(Graphics g) {
+        for(int i = 0; i < topPiles.size(); i++) {
+            if (topPiles.get(i).size() != 0) {
+                Card card = topPiles.get(i).get(0);
+
+                g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, 90, 120, null);
             }
         }
     }
