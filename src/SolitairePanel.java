@@ -8,22 +8,30 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
 
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
     Deck deck;
     ArrayList<Pile> bottomPiles, topPiles;
-    Pile discardPile;
+    Pile discardPile, playableDiscard;
+    int panelHeight = 0;
+    int panelWidth = 0;
+    ArrayList<Point> cardDrawLocations;
+
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
+
+        cardDrawLocations = null;
         prepareDeck();
         preparePiles();
-
+        dealCards();
     }
 
+    //Instantiates and shuffles a deck object and retrieves the card outline image
     private void prepareDeck() {
-        //Create the cards.Deck object and shuffle it
+        //Create the Deck object and shuffle it
         deck = new Deck();
         deck.shuffle();
 
@@ -36,45 +44,70 @@ public class SolitairePanel extends JPanel {
         }
     }
 
+    //Instantiates each pile object and adds them to arraylists
     private void preparePiles() {
         bottomPiles = new ArrayList<>();
         topPiles = new ArrayList<>();
+
+        // Instantiate the piles at the top left. One for the face down and one for face up cards
         discardPile = new Pile();
+        playableDiscard = new Pile();
 
         for(int i = 0; i < 7; i++) {
             bottomPiles.add(new Pile());
         }
         for(int i = 0; i < 4; i++) {
-            bottomPiles.add(new Pile());
+            topPiles.add(new Pile());
         }
     }
 
+    //Plays the initial card placements into their piles
     private void dealCards() {
+        //The last index of the deck that has been placed
         int workingIndex = 0;
 
+        //Bottom row
         for(int i = 0; i < 7; i++) {
             for(int o = 0; o <= i; o++) {
                 bottomPiles.get(i).add(deck.get(workingIndex));
+
+                try {
+                    bottomPiles.get(i).get(o).setFaceDown(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 workingIndex++;
             }
         }
 
+        //Add the left over cards into the pile at the top left
         for(int i = workingIndex; i < deck.size(); i++) {
-            discardPile.add(deck.get(i));
+            try {
+                deck.get(i).setFaceDown(true);
+                discardPile.add(deck.get(i));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //Set each card to face up or face down
+        for (Pile bottomPile : bottomPiles) {
+            try {
+                bottomPile.get(bottomPile.size() - 1).setFaceDown(false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    //TODO: Find a better way of doing this
     private ArrayList<Point> getCardDrawLocations(int panelWidth, int panelHeight) {
         ArrayList<Point> arr = new ArrayList<>();
 
-        int y = panelHeight / 2 + 5;
-
         //This goes through and determines the location where each card will be drawn
-        //It starts from the bottom row, right and goes to the left
-        for(int i = 0; i < 7; i++) {
-            for(int o = 6; o >= i; o--) {
-                arr.add(new Point(15 + (110 * o), y + (20 * i)));
+        //It starts from the bottom row, left to right
+        for(int i = 0; i < bottomPiles.size(); i++) {
+            for (int o = 0; o <= i; o++) {
+                arr.add(new Point(15 + (110 * i), panelHeight / 2 + 5 + (20 * o)));
             }
         }
 
@@ -88,46 +121,44 @@ public class SolitairePanel extends JPanel {
 
     public void paint(Graphics g) {
         super.paintComponent(g);
-        int panelHeight = this.getHeight();
-        int panelWidth = this.getWidth();
 
-        ArrayList<Point> cardDrawLocations;
-
-        cardDrawLocations = getCardDrawLocations(panelWidth, panelHeight);
+        if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
+            panelWidth = this.getWidth();
+            panelHeight = this.getHeight();
+            cardDrawLocations = getCardDrawLocations(panelWidth, panelHeight);
+        }
 
         drawCardOutlines(g, panelWidth, panelHeight);
 
-        if(deck != null) {
-            for (int i = 0; i < deck.size(); i++) {
-                Card card = deck.get(i);
+        if(bottomPiles != null && topPiles != null & discardPile != null && playableDiscard != null && cardDrawLocations != null) {
+            int workingIndex = 0;
+            for(int i = 0; i < bottomPiles.size(); i++) {
+                for (int o = 0; o <= i; o++) {
+                    Card card = bottomPiles.get(i).get(o);
 
-                //TODO: add ability for each card to know where it is in the piles and which pile
-                // Do this by creating an arraylist for each of the seven piles, and will be able to compare
-                // easily, such as the last card will always be able to be picked up and moved, but if multiple
-                // cards are face up in a row AND in order, they can all be moved
-                // Paint will draw each card using it's index in each arraylist
-                // For the pile at the top right, it only needs to be drawn once and not for each card
+                    //TODO: add ability for each card to know where it is in the piles and which pile
+                    // Do this by creating an arraylist for each of the seven piles, and will be able to compare
+                    // easily, such as the last card will always be able to be picked up and moved, but if multiple
+                    // cards are face up in a row AND in order, they can all be moved
+                    // Paint will draw each card using it's index in each arraylist
+                    // For the pile at the top right, it only needs to be drawn once and not for each card
 
-                try {
-                    if (i <= 27) {
-                        if (i == 6 || i == 12 || i == 17 || i == 21 || i == 24 || i == 26 || i == 27) {
-                            card.setFaceDown(false);
-                        } else {
-                            card.setFaceDown(true);
-                        }
-
-                        g.drawImage(card.getImg(), cardDrawLocations.get(i).x, cardDrawLocations.get(i).y, 90, 120, null);
-                    } else {
-                        card.setFaceDown(true);
-                        g.drawImage(card.getImg(), 15, 15, 90, 120, null);
-                    }
-                } catch(IOException e){
-                    e.printStackTrace();
+                    g.drawImage(card.getImg(), cardDrawLocations.get(workingIndex).x, cardDrawLocations.get(workingIndex).y, 90, 120, null);
+                    workingIndex++;
                 }
+            }
+            if(discardPile.size() != 0) {
+                //Just draw one card instead of overlaying all of them
+                g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
+            }
+
+            if(playableDiscard.size() != 0) {
+                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 15, 15, 90, 120, null);
             }
         }
     }
 
+    //Draws the outlines for where the cards can be placed
     private void drawCardOutlines(Graphics g, int panelWidth, int panelHeight) {
         // Distance between each card outline image
         int cardOutlineDist = 110;
