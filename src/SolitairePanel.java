@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.ArrayList;
 
 public class SolitairePanel extends JPanel {
@@ -18,12 +17,14 @@ public class SolitairePanel extends JPanel {
     Pile discardPile, playableDiscard;
     int panelHeight = 0;
     int panelWidth = 0;
-    ArrayList<Point> cardDrawLocations;
+    ArrayList<Point> bottomRowLocations;
+    ArrayList<Point> topRowLocations;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
 
-        cardDrawLocations = null;
+        bottomRowLocations = null;
+        topRowLocations = null;
         prepareDeck();
         preparePiles();
         dealCards();
@@ -100,53 +101,69 @@ public class SolitairePanel extends JPanel {
         }
     }
 
-    private ArrayList<Point> getCardDrawLocations(int panelWidth, int panelHeight) {
+    private ArrayList<Point> getBottomRowLocations() {
         ArrayList<Point> arr = new ArrayList<>();
+        int cardDist = 110;
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < bottomPiles.size(); i++) {
             for (int o = 0; o <= i; o++) {
-                arr.add(new Point(15 + (110 * i), panelHeight / 2 + 5 + (20 * o)));
+                arr.add(new Point(15 + (cardDist * i), panelHeight / 2 + 5 + (20 * o)));
             }
         }
-
-        //Top left
-        Point p = new Point();
-        p.setLocation(15,15);
-        arr.add(p);
-
         return arr;
+    }
+
+    private ArrayList<Point> getTopRowLocations() {
+        ArrayList<Point> arr = new ArrayList<>();
+        int cardOutlineDist = 110;
+
+        //This goes through and determines the location where each card will be drawn
+        //It starts from the bottom row, left to right
+        for(int i = 0; i < topPiles.size(); i++) {
+            for (int o = 0; o <= i; o++) {
+                arr.add(new Point());
+            }
+        }
+        return arr;
+    }
+
+    private void checkPanelSize() {
+        if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
+            panelWidth = this.getWidth();
+            panelHeight = this.getHeight();
+            bottomRowLocations = getBottomRowLocations();
+            topRowLocations = getTopRowLocations();
+        }
     }
 
     public void paint(Graphics g) {
         super.paintComponent(g);
-
-        if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
-            panelWidth = this.getWidth();
-            panelHeight = this.getHeight();
-            cardDrawLocations = getCardDrawLocations(panelWidth, panelHeight);
-        }
+        checkPanelSize();
 
         drawCardOutlines(g, panelWidth, panelHeight);
 
-        if(bottomPiles != null && topPiles != null & discardPile != null && playableDiscard != null && cardDrawLocations != null) {
+        if(bottomPiles != null && topPiles != null & discardPile != null && playableDiscard != null && bottomRowLocations != null) {
             int workingIndex = 0;
             for(int i = 0; i < bottomPiles.size(); i++) {
-                for (int o = 0; o <= i; o++) {
-                    Card card = bottomPiles.get(i).get(o);
+                if (bottomPiles.get(i).size() != 0) {
+                    for (int o = 0; o <= i; o++) {
+                        Card card = bottomPiles.get(i).get(o);
 
-                    //TODO: add ability for each card to know where it is in the piles and which pile
-                    // Do this by creating an arraylist for each of the seven piles, and will be able to compare
-                    // easily, such as the last card will always be able to be picked up and moved, but if multiple
-                    // cards are face up in a row AND in order, they can all be moved
-                    // Paint will draw each card using it's index in each arraylist
-                    // For the pile at the top right, it only needs to be drawn once and not for each card
-
-                    g.drawImage(card.getImg(), cardDrawLocations.get(workingIndex).x, cardDrawLocations.get(workingIndex).y, 90, 120, null);
-                    workingIndex++;
+                        g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, 90, 120, null);
+                        workingIndex++;
+                    }
                 }
             }
+
+//            //Add later
+//            for(int i = 0; i < topPiles.size(); i++) {
+//                if(topPiles.get(i) != 0) {
+//                    g.drawImage(topPiles.get(i).get(0).getImg())
+//                }
+//            }
+
             if(discardPile.size() != 0) {
                 //Just draw one card instead of overlaying all of them
                 g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
