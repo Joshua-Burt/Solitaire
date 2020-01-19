@@ -120,7 +120,7 @@ public class SolitairePanel extends JPanel {
                 int y = panelHeight / 2 + 5 + (20 * o);
 
                 arr.add(new Point(x,y));
-                bottomPiles.get(i).get(o).setLocation(new Point(x + cardImageWidth, y + cardImageHeight));
+                bottomPiles.get(i).get(o).setLocation(new Point(x + cardImageWidth / 2, y));
             }
         }
         return arr;
@@ -130,7 +130,7 @@ public class SolitairePanel extends JPanel {
         ArrayList<Point> arr = new ArrayList<>();
         int cardDist = 110;
 
-        discardPile.get(0).setLocation(new Point(15 + cardImageWidth, 15 + cardImageHeight));
+        discardPile.get(0).setLocation(new Point(15 + cardImageWidth / 2, 15));
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
@@ -139,7 +139,7 @@ public class SolitairePanel extends JPanel {
             int y = 15;
             arr.add(new Point(x,y));
             if(topPiles.get(i).size() > 0) {
-                topPiles.get(i).get(0).setLocation(new Point(x + cardImageWidth, y + cardImageHeight));
+                topPiles.get(i).get(0).setLocation(new Point(x + cardImageWidth / 2, y));
             }
         }
 
@@ -230,6 +230,7 @@ public class SolitairePanel extends JPanel {
         public void mouseClicked(MouseEvent e) {
             Card closestCard = getClosetCard(e.getPoint());
 
+            System.out.println(closestCard.getIndex() + " " + closestCard.getSuit());
         }
 
         @Override
@@ -256,11 +257,12 @@ public class SolitairePanel extends JPanel {
             Card closestCard = null;
             int shortestDist = 1000000;
 
+            //Check the bottom piles for the distance
             for (Pile bottomPile : bottomPiles) {
                 if(bottomPile.size() > 0) {
                     for (Card card : bottomPile) {
                         int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
-                        if (workingDist < shortestDist) {
+                        if (workingDist < shortestDist && !card.isFaceDown()) {
                             shortestDist = workingDist;
                             closestCard = card;
                         }
@@ -268,11 +270,12 @@ public class SolitairePanel extends JPanel {
                 }
             }
 
+            //Check the top piles for the distance
             for (Pile topPile : topPiles) {
                 if(topPile.size() > 0) {
                     for (Card card : topPile) {
                         int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
-                        if (workingDist < shortestDist) {
+                        if (workingDist < shortestDist && !card.isFaceDown()) {
                             shortestDist = workingDist;
                             closestCard = card;
                         }
@@ -280,6 +283,7 @@ public class SolitairePanel extends JPanel {
                 }
             }
 
+            //Check the discard pile for the distance
             if(discardPile.size() > 0) {
                 Point pnt = discardPile.get(0).getLocation();
                 int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
@@ -287,11 +291,25 @@ public class SolitairePanel extends JPanel {
                     shortestDist = workingDist;
                     closestCard = discardPile.get(0);
                 }
+
+                //Check the bottom of the discard pile as well
+                workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y + cardImageHeight);
+                if(workingDist < shortestDist) {
+                    shortestDist = workingDist;
+                    closestCard = discardPile.get(0);
+                }
             }
 
+            //Check the playable discard pile for the distance
             if(playableDiscard.size() > 0) {
                 Point pnt = playableDiscard.get(0).getLocation();
                 int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
+                if(workingDist < shortestDist) {
+                    closestCard = playableDiscard.get(0);
+                }
+
+                //Check the bottom of the discard pile as well
+                workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y + cardImageHeight);
                 if(workingDist < shortestDist) {
                     closestCard = playableDiscard.get(0);
                 }
