@@ -20,6 +20,8 @@ public class SolitairePanel extends JPanel {
     private Pile discardPile, playableDiscard;
     private int panelHeight = 0;
     private int panelWidth = 0;
+    private int cardImageWidth;
+    private int cardImageHeight;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
@@ -30,6 +32,9 @@ public class SolitairePanel extends JPanel {
         prepareDeck();
         preparePiles();
         dealCards();
+
+        cardImageWidth = 90;
+        cardImageHeight = 120;
     }
 
     //Instantiates and shuffles a deck object and retrieves the card outline image
@@ -110,8 +115,12 @@ public class SolitairePanel extends JPanel {
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < bottomPiles.size(); i++) {
-            for (int o = 0; o <= i; o++) {
-                arr.add(new Point(15 + (cardDist * i), panelHeight / 2 + 5 + (20 * o)));
+            for(int o = 0; o <= i; o++) {
+                int x = 15 + (cardDist * i);
+                int y = panelHeight / 2 + 5 + (20 * o);
+
+                arr.add(new Point(x,y));
+                bottomPiles.get(i).get(o).setLocation(new Point(x + cardImageWidth, y + cardImageHeight));
             }
         }
         return arr;
@@ -121,11 +130,19 @@ public class SolitairePanel extends JPanel {
         ArrayList<Point> arr = new ArrayList<>();
         int cardDist = 110;
 
+        discardPile.get(0).setLocation(new Point(15 + cardImageWidth, 15 + cardImageHeight));
+
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < topPiles.size(); i++) {
-            arr.add(new Point(5 + panelWidth - cardDist * (4 - i), 15));
+            int x = 5 + panelWidth - cardDist * (4 - i);
+            int y = 15;
+            arr.add(new Point(x,y));
+            if(topPiles.get(i).size() > 0) {
+                topPiles.get(i).get(0).setLocation(new Point(x + cardImageWidth, y + cardImageHeight));
+            }
         }
+
         return arr;
     }
 
@@ -146,7 +163,7 @@ public class SolitairePanel extends JPanel {
         drawCardOutlines(g, panelWidth, panelHeight);
 
         if(bottomPiles != null && topPiles != null & discardPile != null &&
-           playableDiscard != null && bottomRowLocations != null) {
+                playableDiscard != null && bottomRowLocations != null) {
 
             drawBottomRowCards(g);
             drawTopRowCards(g);
@@ -158,12 +175,12 @@ public class SolitairePanel extends JPanel {
             }
             if(discardPile.size() != 0) {
                 //Just draw one card instead of overlaying all of them
-                g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
+                g.drawImage(discardPile.get(0).getImg(), 15, 15, cardImageWidth, cardImageHeight, null);
             }
 
             if(playableDiscard.size() != 0) {
                 //Just draw one card instead of overlaying all of them
-                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, 90, 120, null);
+                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, cardImageWidth, cardImageHeight, null);
             }
         }
     }
@@ -174,7 +191,7 @@ public class SolitairePanel extends JPanel {
         for(Pile bottomPile : bottomPiles) {
             if(bottomPile.size() != 0) {
                 for (Card card : bottomPile) {
-                    g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, 90, 120, null);
+                    g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, cardImageWidth, cardImageHeight, null);
                     workingIndex++;
                 }
             }
@@ -186,7 +203,7 @@ public class SolitairePanel extends JPanel {
             if (topPiles.get(i).size() != 0) {
                 Card card = topPiles.get(i).get(0);
 
-                g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, 90, 120, null);
+                g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, cardImageWidth, cardImageHeight, null);
             }
         }
     }
@@ -212,7 +229,6 @@ public class SolitairePanel extends JPanel {
         @Override
         public void mouseClicked(MouseEvent e) {
             Card closestCard = getClosetCard(e.getPoint());
-
 
         }
 
@@ -261,6 +277,23 @@ public class SolitairePanel extends JPanel {
                             closestCard = card;
                         }
                     }
+                }
+            }
+
+            if(discardPile.size() > 0) {
+                Point pnt = discardPile.get(0).getLocation();
+                int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
+                if(workingDist < shortestDist) {
+                    shortestDist = workingDist;
+                    closestCard = discardPile.get(0);
+                }
+            }
+
+            if(playableDiscard.size() > 0) {
+                Point pnt = playableDiscard.get(0).getLocation();
+                int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
+                if(workingDist < shortestDist) {
+                    closestCard = playableDiscard.get(0);
                 }
             }
 
