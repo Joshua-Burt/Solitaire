@@ -5,6 +5,8 @@ import cards.Pile;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,15 +14,16 @@ import java.util.ArrayList;
 
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
-    Deck deck;
-    ArrayList<Pile> bottomPiles, topPiles;
-    ArrayList<Point> bottomRowLocations, topRowLocations;
-    Pile discardPile, playableDiscard;
-    int panelHeight = 0;
-    int panelWidth = 0;
+    private Deck deck;
+    private ArrayList<Pile> bottomPiles, topPiles;
+    private ArrayList<Point> bottomRowLocations, topRowLocations;
+    private Pile discardPile, playableDiscard;
+    private int panelHeight = 0;
+    private int panelWidth = 0;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
+        addMouseListener(new PressListener());
 
         bottomRowLocations = null;
         topRowLocations = null;
@@ -140,7 +143,6 @@ public class SolitairePanel extends JPanel {
     public void paint(Graphics g) {
         super.paintComponent(g);
         checkPanelSize();
-
         drawCardOutlines(g, panelWidth, panelHeight);
 
         if(bottomPiles != null && topPiles != null & discardPile != null &&
@@ -148,12 +150,12 @@ public class SolitairePanel extends JPanel {
 
             drawBottomRowCards(g);
             drawTopRowCards(g);
-//            //Add later
-//            for(int i = 0; i < topPiles.size(); i++) {
-//                if(topPiles.get(i) != 0) {
-//                    g.drawImage(topPiles.get(i).get(0).getImg())
-//                }
-//            }
+            //Add later
+            for(int i = 0; i < topPiles.size(); i++) {
+                if(topPiles.get(i).size() != 0) {
+                    g.drawImage(topPiles.get(i).get(0).getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, null);
+                }
+            }
             if(discardPile.size() != 0) {
                 //Just draw one card instead of overlaying all of them
                 g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
@@ -203,6 +205,71 @@ public class SolitairePanel extends JPanel {
         //Bottom card outlines
         for(int i = 0; i < 7; i++) {
             g.drawImage(cardOutline, 10 + cardOutlineDist * i, panelHeight / 2, null);
+        }
+    }
+
+    private class PressListener implements MouseListener {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            Card closestCard = getClosetCard(e.getPoint());
+
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+
+        private Card getClosetCard(Point mousePoint) {
+            Card closestCard = null;
+            int shortestDist = 1000000;
+
+            for (Pile bottomPile : bottomPiles) {
+                if(bottomPile.size() > 0) {
+                    for (Card card : bottomPile) {
+                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+                        if (workingDist < shortestDist) {
+                            shortestDist = workingDist;
+                            closestCard = card;
+                        }
+                    }
+                }
+            }
+
+            for (Pile topPile : topPiles) {
+                if(topPile.size() > 0) {
+                    for (Card card : topPile) {
+                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+                        if (workingDist < shortestDist) {
+                            shortestDist = workingDist;
+                            closestCard = card;
+                        }
+                    }
+                }
+            }
+
+            return closestCard;
+        }
+
+        private int dist(int x1, int y1, int x2, int y2) {
+            //Using sqrt((x2 − x1)^2 + (y2 − y1)^2)
+            return (int)Math.round(Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2)));
         }
     }
 }
