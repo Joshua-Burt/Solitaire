@@ -115,7 +115,7 @@ public class SolitairePanel extends JPanel {
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < bottomPiles.size(); i++) {
-            for(int o = 0; o <= i; o++) {
+            for(int o = 0; o < bottomPiles.get(i).size(); o++) {
                 int x = 15 + (cardDist * i);
                 int y = panelHeight / 2 + 5 + (20 * o);
 
@@ -142,7 +142,6 @@ public class SolitairePanel extends JPanel {
                 topPiles.get(i).get(0).setLocation(new Point(x + cardImageWidth / 2, y));
             }
         }
-
         return arr;
     }
 
@@ -187,15 +186,13 @@ public class SolitairePanel extends JPanel {
 
     private void drawBottomRowCards(Graphics g) {
         int workingIndex = 0;
-
-        for(Pile bottomPile : bottomPiles) {
-            if(bottomPile.size() != 0) {
-                for (Card card : bottomPile) {
-                    g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, cardImageWidth, cardImageHeight, null);
-                    workingIndex++;
-                }
+        for (Pile bottomPile : bottomPiles) {
+            for (Card card : bottomPile) {
+                g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, cardImageWidth, cardImageHeight, null);
+                workingIndex++;
             }
         }
+        repaint();
     }
 
     private void drawTopRowCards(Graphics g) {
@@ -206,6 +203,7 @@ public class SolitairePanel extends JPanel {
                 g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, cardImageWidth, cardImageHeight, null);
             }
         }
+        repaint();
     }
 
     //Draws the outlines for where the cards can be placed
@@ -223,19 +221,73 @@ public class SolitairePanel extends JPanel {
         for(int i = 0; i < 7; i++) {
             g.drawImage(cardOutline, 10 + cardOutlineDist * i, panelHeight / 2, null);
         }
+        repaint();
     }
 
     private class PressListener implements MouseListener {
+        Card card1 = null;
+        Card card2 = null;
         @Override
         public void mouseClicked(MouseEvent e) {
             Card closestCard = getClosetCard(e.getPoint());
 
+            if(card1 == null) {
+                card1 = closestCard;
+            } else {
+                card2 = closestCard;
+            }
+
+            if(card1 != null && card2 != null) {
+                //Gets the index of the card in the array, as there are some cards that are not
+                //  numbers and are hard to compare (Ace, Jack, Queen, King)
+                int card1Index = deck.indices.indexOf(card1.getIndex());
+                int card2Index = deck.indices.indexOf(card2.getIndex());
+
+                String card1Suit = card1.getSuit();
+                String card2Suit = card2.getSuit();
+
+                Pile card1Pile = null;
+                Pile card2Pile = null;
+
+                boolean match = checkCardSuits(card1Suit, card2Suit);
+
+                if(card1Index == card2Index - 1 && match) {
+                    for (Pile bottomPile : bottomPiles) {
+                        if (bottomPile.contains(card1)) {
+                            card1Pile = bottomPile;
+                        }
+                        if (bottomPile.contains(card2)) {
+                            card2Pile = bottomPile;
+                        }
+                    }
+                    card1.setLocation(new Point(card2.getLocation().x, card2.getLocation().y + 20));
+
+                    if(card1Pile != null && card2Pile != null) {
+                        card2Pile.add(card1);
+                        card1Pile.remove(card1);
+
+                        //card1Ple.size() != 0 if it is the last card in the pile
+                        if (card1Pile.size() != 0 && card1Pile.get(card1Pile.size() - 1).isFaceDown()) {
+                            try {
+                                card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+
+                        bottomRowLocations = getBottomRowLocations();
+                        topRowLocations = getTopRowLocations();
+
+                        card1 = null;
+                        card2 = null;
+                    }
+                }
+            }
             System.out.println(closestCard.getIndex() + " " + closestCard.getSuit());
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-
         }
 
         @Override
@@ -318,9 +370,29 @@ public class SolitairePanel extends JPanel {
             return closestCard;
         }
 
+        //Returns the distance between two given points
         private int dist(int x1, int y1, int x2, int y2) {
             //Using sqrt((x2 − x1)^2 + (y2 − y1)^2)
             return (int)Math.round(Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2)));
+        }
+
+        private boolean checkCardSuits(String card1Suit, String card2Suit) {
+            boolean match = false;
+            switch(card1Suit) {
+                case "H":
+                case "D":
+                    if(card2Suit.equals("S") || card2Suit.equals("C")) {
+                        match = true;
+                    }
+                    break;
+                case "S":
+                case "C":
+                    if(card2Suit.equals("H") || card2Suit.equals("D")) {
+                        match = true;
+                    }
+                    break;
+            }
+            return match;
         }
     }
 }
