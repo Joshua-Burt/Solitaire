@@ -5,28 +5,36 @@ import cards.Pile;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.ArrayList;
 
 public class SolitairePanel extends JPanel {
     private BufferedImage cardOutline;
-    Deck deck;
-    ArrayList<Pile> bottomPiles, topPiles;
-    Pile discardPile, playableDiscard;
-    int panelHeight = 0;
-    int panelWidth = 0;
-    ArrayList<Point> cardDrawLocations;
+    private Deck deck;
+    private ArrayList<Pile> bottomPiles, topPiles;
+    private ArrayList<Point> bottomRowLocations, topRowLocations;
+    private Pile discardPile, playableDiscard;
+    private int panelHeight = 0;
+    private int panelWidth = 0;
+    private int cardImageWidth;
+    private int cardImageHeight;
 
     public SolitairePanel() {
         setBackground(new Color(27, 117, 33));
+        addMouseListener(new PressListener());
 
-        cardDrawLocations = null;
+        bottomRowLocations = null;
+        topRowLocations = null;
         prepareDeck();
         preparePiles();
         dealCards();
+
+        cardImageWidth = 90;
+        cardImageHeight = 120;
     }
 
     //Instantiates and shuffles a deck object and retrieves the card outline image
@@ -100,62 +108,101 @@ public class SolitairePanel extends JPanel {
         }
     }
 
-    private ArrayList<Point> getCardDrawLocations(int panelWidth, int panelHeight) {
+    private ArrayList<Point> getBottomRowLocations() {
         ArrayList<Point> arr = new ArrayList<>();
+        int cardDist = 110;
 
         //This goes through and determines the location where each card will be drawn
         //It starts from the bottom row, left to right
         for(int i = 0; i < bottomPiles.size(); i++) {
-            for (int o = 0; o <= i; o++) {
-                arr.add(new Point(15 + (110 * i), panelHeight / 2 + 5 + (20 * o)));
+            for(int o = 0; o < bottomPiles.get(i).size(); o++) {
+                int x = 15 + (cardDist * i);
+                int y = panelHeight / 2 + 5 + (20 * o);
+
+                arr.add(new Point(x,y));
+                bottomPiles.get(i).get(o).setLocation(new Point(x + cardImageWidth / 2, y));
             }
         }
-
-        //Top left
-        Point p = new Point();
-        p.setLocation(15,15);
-        arr.add(p);
-
         return arr;
+    }
+
+    private ArrayList<Point> getTopRowLocations() {
+        ArrayList<Point> arr = new ArrayList<>();
+        int cardDist = 110;
+
+        discardPile.get(0).setLocation(new Point(15 + cardImageWidth / 2, 15));
+
+        //This goes through and determines the location where each card will be drawn
+        //It starts from the bottom row, left to right
+        for(int i = 0; i < topPiles.size(); i++) {
+            int x = 5 + panelWidth - cardDist * (4 - i);
+            int y = 15;
+            arr.add(new Point(x,y));
+            if(topPiles.get(i).size() > 0) {
+                topPiles.get(i).get(0).setLocation(new Point(x + cardImageWidth / 2, y));
+            }
+        }
+        return arr;
+    }
+
+    //Each paint cycle this will be called to check if the card placements
+    // need to be rearranged
+    private void checkPanelSize() {
+        if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
+            panelWidth = this.getWidth();
+            panelHeight = this.getHeight();
+            bottomRowLocations = getBottomRowLocations();
+            topRowLocations = getTopRowLocations();
+        }
     }
 
     public void paint(Graphics g) {
         super.paintComponent(g);
-
-        if(this.getWidth() != panelWidth || this.getHeight() != panelHeight) {
-            panelWidth = this.getWidth();
-            panelHeight = this.getHeight();
-            cardDrawLocations = getCardDrawLocations(panelWidth, panelHeight);
-        }
-
+        checkPanelSize();
         drawCardOutlines(g, panelWidth, panelHeight);
 
-        if(bottomPiles != null && topPiles != null & discardPile != null && playableDiscard != null && cardDrawLocations != null) {
-            int workingIndex = 0;
-            for(int i = 0; i < bottomPiles.size(); i++) {
-                for (int o = 0; o <= i; o++) {
-                    Card card = bottomPiles.get(i).get(o);
+        if(bottomPiles != null && topPiles != null & discardPile != null &&
+           playableDiscard != null && bottomRowLocations != null) {
+            drawBottomRowCards(g);
+            drawTopRowCards(g);
+            drawDiscardPileCards(g);
+        }
+    }
 
-                    //TODO: add ability for each card to know where it is in the piles and which pile
-                    // Do this by creating an arraylist for each of the seven piles, and will be able to compare
-                    // easily, such as the last card will always be able to be picked up and moved, but if multiple
-                    // cards are face up in a row AND in order, they can all be moved
-                    // Paint will draw each card using it's index in each arraylist
-                    // For the pile at the top right, it only needs to be drawn once and not for each card
-
-                    g.drawImage(card.getImg(), cardDrawLocations.get(workingIndex).x, cardDrawLocations.get(workingIndex).y, 90, 120, null);
-                    workingIndex++;
-                }
-            }
-            if(discardPile.size() != 0) {
-                //Just draw one card instead of overlaying all of them
-                g.drawImage(discardPile.get(0).getImg(), 15, 15, 90, 120, null);
-            }
-
-            if(playableDiscard.size() != 0) {
-                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 15, 15, 90, 120, null);
+    private void drawBottomRowCards(Graphics g) {
+        int workingIndex = 0;
+        for (Pile bottomPile : bottomPiles) {
+            for (Card card : bottomPile) {
+                Point workingPoint = bottomRowLocations.get(workingIndex);
+                g.drawImage(card.getImg(), workingPoint.x, workingPoint.y, cardImageWidth, cardImageHeight, null);
+                workingIndex++;
             }
         }
+        repaint();
+    }
+
+    private void drawTopRowCards(Graphics g) {
+        for(int i = 0; i < topPiles.size(); i++) {
+            if (topPiles.get(i).size() != 0) {
+                Card card = topPiles.get(i).get(0);
+
+                g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, cardImageWidth, cardImageHeight, null);
+            }
+        }
+        repaint();
+    }
+
+    private void drawDiscardPileCards(Graphics g) {
+        if(discardPile.size() != 0) {
+            //Just draw one card instead of overlaying all of them
+            g.drawImage(discardPile.get(0).getImg(), 15, 15, cardImageWidth, cardImageHeight, null);
+        }
+
+        if(playableDiscard.size() != 0) {
+            //Just draw one card instead of overlaying all of them
+            g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, cardImageWidth, cardImageHeight, null);
+        }
+        repaint();
     }
 
     //Draws the outlines for where the cards can be placed
@@ -172,6 +219,180 @@ public class SolitairePanel extends JPanel {
         //Bottom card outlines
         for(int i = 0; i < 7; i++) {
             g.drawImage(cardOutline, 10 + cardOutlineDist * i, panelHeight / 2, null);
+        }
+        repaint();
+    }
+
+    private class PressListener implements MouseListener {
+        Card card1 = null;
+        Card card2 = null;
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            Card closestCard = getClosetCard(e.getPoint());
+
+            if(card1 == null) {
+                card1 = closestCard;
+            } else {
+                card2 = closestCard;
+            }
+
+            if(card1 != null && card2 != null) {
+                //Gets the index of the card in the array, as there are some cards that are not
+                //  numbers and are hard to compare (Ace, Jack, Queen, King)
+                int card1Index = deck.indices.indexOf(card1.getIndex());
+                int card2Index = deck.indices.indexOf(card2.getIndex());
+
+                String card1Suit = card1.getSuit();
+                String card2Suit = card2.getSuit();
+
+                Pile card1Pile = null;
+                Pile card2Pile = null;
+
+                boolean isMatch = checkCardSuits(card1Suit, card2Suit);
+
+                if(card1Index == card2Index - 1 && isMatch) {
+                    for (Pile bottomPile : bottomPiles) {
+                        if (bottomPile.contains(card1)) {
+                            card1Pile = bottomPile;
+                        }
+                        if (bottomPile.contains(card2)) {
+                            card2Pile = bottomPile;
+                        }
+                    }
+                    card1.setLocation(new Point(card2.getLocation().x, card2.getLocation().y + 20));
+
+                    if(card1Pile != null && card2Pile != null) {
+                        card2Pile.add(card1);
+                        card1Pile.remove(card1);
+
+                        //card1Ple.size() != 0 if it is the last card in the pile
+                        if (card1Pile.size() != 0 && card1Pile.get(card1Pile.size() - 1).isFaceDown()) {
+                            try {
+                                card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+
+                        bottomRowLocations = getBottomRowLocations();
+                        topRowLocations = getTopRowLocations();
+
+                        card1 = null;
+                        card2 = null;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+
+        private Card getClosetCard(Point mousePoint) {
+            Card closestCard = null;
+            //An initial distance so large no card will ever be farther
+            int shortestDist = 1000000;
+
+            //Check the bottom piles for the distance
+            for (Pile bottomPile : bottomPiles) {
+                if(bottomPile.size() > 0) {
+                    for (Card card : bottomPile) {
+                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+                        if (workingDist < shortestDist && !card.isFaceDown()) {
+                            shortestDist = workingDist;
+                            closestCard = card;
+                        }
+                    }
+                }
+            }
+
+            //Check the top piles for the distance
+            for (Pile topPile : topPiles) {
+                if(topPile.size() > 0) {
+                    for (Card card : topPile) {
+                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+                        if (workingDist < shortestDist && !card.isFaceDown()) {
+                            shortestDist = workingDist;
+                            closestCard = card;
+                        }
+                    }
+                }
+            }
+
+            //Check the discard pile for the distance
+            if(discardPile.size() > 0) {
+                Point pnt = discardPile.get(0).getLocation();
+                int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
+                if(workingDist < shortestDist) {
+                    shortestDist = workingDist;
+                    closestCard = discardPile.get(0);
+                }
+
+                //Check the bottom of the discard pile as well
+                workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y + cardImageHeight);
+                if(workingDist < shortestDist) {
+                    shortestDist = workingDist;
+                    closestCard = discardPile.get(0);
+                }
+            }
+
+            //Check the playable discard pile for the distance
+            if(playableDiscard.size() > 0) {
+                Point pnt = playableDiscard.get(0).getLocation();
+                int workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y);
+                if(workingDist < shortestDist) {
+                    closestCard = playableDiscard.get(0);
+                }
+
+                //Check the bottom of the discard pile as well
+                workingDist = dist(mousePoint.x, mousePoint.y, pnt.x, pnt.y + cardImageHeight);
+                if(workingDist < shortestDist) {
+                    closestCard = playableDiscard.get(0);
+                }
+            }
+
+            return closestCard;
+        }
+
+        //Returns the distance between two given points
+        private int dist(int x1, int y1, int x2, int y2) {
+            //Using sqrt((x2 − x1)^2 + (y2 − y1)^2)
+            return (int)Math.round(Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2)));
+        }
+
+        //Verify the chosen cards are opposite suits
+        private boolean checkCardSuits(String card1Suit, String card2Suit) {
+            boolean isMatch = false;
+            switch(card1Suit) {
+                case "H":
+                case "D":
+                    if(card2Suit.equals("S") || card2Suit.equals("C")) {
+                        isMatch = true;
+                    }
+                    break;
+                case "S":
+                case "C":
+                    if(card2Suit.equals("H") || card2Suit.equals("D")) {
+                        isMatch = true;
+                    }
+                    break;
+            }
+            return isMatch;
         }
     }
 }

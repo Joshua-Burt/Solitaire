@@ -2,15 +2,17 @@ package cards;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Deck extends ArrayList<Card> {
-    String[] suits;
-    String[] indices;
+    public ArrayList<String> suits;
+    public ArrayList<String> indices;
 
+    //TODO: Change A,J,Q,K to their respective numbers and redo the PressListener class in SolitairePanel
     public Deck() {
-        this.suits = new String[]{"C","D","H","S"};
-        this.indices = new String[]{"A","2","3","4","5","6","7","8","9","10","J","Q","K"};
+        this.suits = new ArrayList<>(Arrays.asList("C","D","S","H"));
+        this.indices = new ArrayList<>(Arrays.asList("A","2","3","4","5","6","7","8","9","10","J","Q","K"));
 
         createCards();
     }
