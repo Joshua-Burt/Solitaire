@@ -7,13 +7,13 @@ import java.io.File;
 import java.io.IOException;
 
 public class Card {
-    private String index;
+    private int index;
     private String suit;
     private Point location;
     private BufferedImage img;
     private boolean isFaceDown;
 
-    public Card(String index, String suit) throws IOException {
+    public Card(int index, String suit) throws IOException {
         this.index = index;
         this.suit = suit.toUpperCase();
 
@@ -21,7 +21,7 @@ public class Card {
         img = ImageIO.read(file);
     }
 
-    public String getIndex() {
+    public int getIndex() {
         return index;
     }
 

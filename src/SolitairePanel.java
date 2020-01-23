@@ -237,11 +237,8 @@ public class SolitairePanel extends JPanel {
             }
 
             if(card1 != null && card2 != null) {
-                //Gets the index of the card in the array, as there are some cards that are not
-                //  numbers and are hard to compare (Ace, Jack, Queen, King)
-                int card1Index = deck.indices.indexOf(card1.getIndex());
-                int card2Index = deck.indices.indexOf(card2.getIndex());
-
+                int card1Index = card1.getIndex();
+                int card2Index = card2.getIndex();
                 String card1Suit = card1.getSuit();
                 String card2Suit = card2.getSuit();
 
