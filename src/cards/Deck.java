@@ -20,12 +20,8 @@ public class Deck extends ArrayList<Card> {
         // Two for loops to create each combination of card
         for(String suit : suits) {
             for (int index : indices) {
-                try {
-                    Card card = new Card(index, suit);
-                    this.add(card);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Card card = new Card(index, suit);
+                this.add(card);
             }
         }
     }

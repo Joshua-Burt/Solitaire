@@ -78,33 +78,20 @@ public class SolitairePanel extends JPanel {
         for(int i = 0; i < 7; i++) {
             for(int o = 0; o <= i; o++) {
                 bottomPiles.get(i).add(deck.get(workingIndex));
-
-                try {
-                    bottomPiles.get(i).get(o).setFaceDown(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                bottomPiles.get(i).get(o).setFaceDown(true);
                 workingIndex++;
             }
         }
 
         //Add the left over cards into the pile at the top left
         for(int i = workingIndex; i < deck.size(); i++) {
-            try {
-                deck.get(i).setFaceDown(true);
-                discardPile.add(deck.get(i));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            deck.get(i).setFaceDown(true);
+            discardPile.add(deck.get(i));
         }
 
         //Set each card to face up or face down
         for (Pile bottomPile : bottomPiles) {
-            try {
-                bottomPile.get(bottomPile.size() - 1).setFaceDown(false);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            bottomPile.get(bottomPile.size() - 1).setFaceDown(false);
         }
     }
 
@@ -264,11 +251,7 @@ public class SolitairePanel extends JPanel {
 
                         //card1Ple.size() != 0 if it is the last card in the pile
                         if (card1Pile.size() != 0 && card1Pile.get(card1Pile.size() - 1).isFaceDown()) {
-                            try {
-                                card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+                            card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
                         }
 
                         bottomRowLocations = getBottomRowLocations();
