@@ -162,25 +162,10 @@ public class SolitairePanel extends JPanel {
         drawCardOutlines(g, panelWidth, panelHeight);
 
         if(bottomPiles != null && topPiles != null & discardPile != null &&
-                playableDiscard != null && bottomRowLocations != null) {
-
+           playableDiscard != null && bottomRowLocations != null) {
             drawBottomRowCards(g);
             drawTopRowCards(g);
-            //Add later
-            for(int i = 0; i < topPiles.size(); i++) {
-                if(topPiles.get(i).size() != 0) {
-                    g.drawImage(topPiles.get(i).get(0).getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, null);
-                }
-            }
-            if(discardPile.size() != 0) {
-                //Just draw one card instead of overlaying all of them
-                g.drawImage(discardPile.get(0).getImg(), 15, 15, cardImageWidth, cardImageHeight, null);
-            }
-
-            if(playableDiscard.size() != 0) {
-                //Just draw one card instead of overlaying all of them
-                g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, cardImageWidth, cardImageHeight, null);
-            }
+            drawDiscardPileCards(g);
         }
     }
 
@@ -188,7 +173,8 @@ public class SolitairePanel extends JPanel {
         int workingIndex = 0;
         for (Pile bottomPile : bottomPiles) {
             for (Card card : bottomPile) {
-                g.drawImage(card.getImg(), bottomRowLocations.get(workingIndex).x, bottomRowLocations.get(workingIndex).y, cardImageWidth, cardImageHeight, null);
+                Point workingPoint = bottomRowLocations.get(workingIndex);
+                g.drawImage(card.getImg(), workingPoint.x, workingPoint.y, cardImageWidth, cardImageHeight, null);
                 workingIndex++;
             }
         }
@@ -202,6 +188,19 @@ public class SolitairePanel extends JPanel {
 
                 g.drawImage(card.getImg(), topRowLocations.get(i).x, topRowLocations.get(i).y, cardImageWidth, cardImageHeight, null);
             }
+        }
+        repaint();
+    }
+
+    private void drawDiscardPileCards(Graphics g) {
+        if(discardPile.size() != 0) {
+            //Just draw one card instead of overlaying all of them
+            g.drawImage(discardPile.get(0).getImg(), 15, 15, cardImageWidth, cardImageHeight, null);
+        }
+
+        if(playableDiscard.size() != 0) {
+            //Just draw one card instead of overlaying all of them
+            g.drawImage(playableDiscard.get(playableDiscard.size() - 1).getImg(), 125, 15, cardImageWidth, cardImageHeight, null);
         }
         repaint();
     }
@@ -249,9 +248,9 @@ public class SolitairePanel extends JPanel {
                 Pile card1Pile = null;
                 Pile card2Pile = null;
 
-                boolean match = checkCardSuits(card1Suit, card2Suit);
+                boolean isMatch = checkCardSuits(card1Suit, card2Suit);
 
-                if(card1Index == card2Index - 1 && match) {
+                if(card1Index == card2Index - 1 && isMatch) {
                     for (Pile bottomPile : bottomPiles) {
                         if (bottomPile.contains(card1)) {
                             card1Pile = bottomPile;
@@ -283,7 +282,6 @@ public class SolitairePanel extends JPanel {
                     }
                 }
             }
-            System.out.println(closestCard.getIndex() + " " + closestCard.getSuit());
         }
 
         @Override
@@ -307,6 +305,7 @@ public class SolitairePanel extends JPanel {
 
         private Card getClosetCard(Point mousePoint) {
             Card closestCard = null;
+            //An initial distance so large no card will ever be farther
             int shortestDist = 1000000;
 
             //Check the bottom piles for the distance
@@ -376,23 +375,24 @@ public class SolitairePanel extends JPanel {
             return (int)Math.round(Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2)));
         }
 
+        //Verify the chosen cards are opposite suits
         private boolean checkCardSuits(String card1Suit, String card2Suit) {
-            boolean match = false;
+            boolean isMatch = false;
             switch(card1Suit) {
                 case "H":
                 case "D":
                     if(card2Suit.equals("S") || card2Suit.equals("C")) {
-                        match = true;
+                        isMatch = true;
                     }
                     break;
                 case "S":
                 case "C":
                     if(card2Suit.equals("H") || card2Suit.equals("D")) {
-                        match = true;
+                        isMatch = true;
                     }
                     break;
             }
-            return match;
+            return isMatch;
         }
     }
 }
