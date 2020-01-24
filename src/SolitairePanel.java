@@ -78,33 +78,20 @@ public class SolitairePanel extends JPanel {
         for(int i = 0; i < 7; i++) {
             for(int o = 0; o <= i; o++) {
                 bottomPiles.get(i).add(deck.get(workingIndex));
-
-                try {
-                    bottomPiles.get(i).get(o).setFaceDown(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                bottomPiles.get(i).get(o).setFaceDown(true);
                 workingIndex++;
             }
         }
 
         //Add the left over cards into the pile at the top left
         for(int i = workingIndex; i < deck.size(); i++) {
-            try {
-                deck.get(i).setFaceDown(true);
-                discardPile.add(deck.get(i));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            deck.get(i).setFaceDown(true);
+            discardPile.add(deck.get(i));
         }
 
         //Set each card to face up or face down
         for (Pile bottomPile : bottomPiles) {
-            try {
-                bottomPile.get(bottomPile.size() - 1).setFaceDown(false);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            bottomPile.get(bottomPile.size() - 1).setFaceDown(false);
         }
     }
 
@@ -226,9 +213,12 @@ public class SolitairePanel extends JPanel {
     private class PressListener implements MouseListener {
         Card card1 = null;
         Card card2 = null;
+        Card closestCard = null;
+        int shortestDist = 1000000;
+
         @Override
         public void mouseClicked(MouseEvent e) {
-            Card closestCard = getClosetCard(e.getPoint());
+            getClosetCard(e.getPoint());
 
             if(card1 == null) {
                 card1 = closestCard;
@@ -237,11 +227,8 @@ public class SolitairePanel extends JPanel {
             }
 
             if(card1 != null && card2 != null) {
-                //Gets the index of the card in the array, as there are some cards that are not
-                //  numbers and are hard to compare (Ace, Jack, Queen, King)
-                int card1Index = deck.indices.indexOf(card1.getIndex());
-                int card2Index = deck.indices.indexOf(card2.getIndex());
-
+                int card1Index = card1.getIndex();
+                int card2Index = card2.getIndex();
                 String card1Suit = card1.getSuit();
                 String card2Suit = card2.getSuit();
 
@@ -259,6 +246,14 @@ public class SolitairePanel extends JPanel {
                             card2Pile = bottomPile;
                         }
                     }
+                    for (Pile topPile : topPiles) {
+                        if (topPile.contains(card1)) {
+                            card1Pile = topPile;
+                        }
+                        if (topPile.contains(card2)) {
+                            card2Pile = topPile;
+                        }
+                    }
                     card1.setLocation(new Point(card2.getLocation().x, card2.getLocation().y + 20));
 
                     if(card1Pile != null && card2Pile != null) {
@@ -267,16 +262,14 @@ public class SolitairePanel extends JPanel {
 
                         //card1Ple.size() != 0 if it is the last card in the pile
                         if (card1Pile.size() != 0 && card1Pile.get(card1Pile.size() - 1).isFaceDown()) {
-                            try {
-                                card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+                            card1Pile.get(card1Pile.size() - 1).setFaceDown(false);
                         }
 
                         bottomRowLocations = getBottomRowLocations();
                         topRowLocations = getTopRowLocations();
 
+                        closestCard = null;
+                        shortestDist = 1000000;
                         card1 = null;
                         card2 = null;
                     }
@@ -303,36 +296,36 @@ public class SolitairePanel extends JPanel {
 
         }
 
-        private Card getClosetCard(Point mousePoint) {
-            Card closestCard = null;
-            //An initial distance so large no card will ever be farther
-            int shortestDist = 1000000;
+        private void getClosetCard(Point mousePoint) {
+            closestCard = checkPile(bottomPiles, mousePoint, null);
+            closestCard = checkPile(topPiles, mousePoint, closestCard);
 
-            //Check the bottom piles for the distance
-            for (Pile bottomPile : bottomPiles) {
-                if(bottomPile.size() > 0) {
-                    for (Card card : bottomPile) {
-                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
-                        if (workingDist < shortestDist && !card.isFaceDown()) {
-                            shortestDist = workingDist;
-                            closestCard = card;
-                        }
-                    }
-                }
-            }
+//            //Check the bottom piles for the distance
+//            for (int i = 0; i < bottomPiles.size(); i++) {
+//                Pile bottomPile = bottomPiles.get(i);
+//                if (bottomPile.size() > 0) {
+//                    for (Card card : bottomPile) {
+//                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+//                        if (workingDist < shortestDist && !card.isFaceDown()) {
+//                            shortestDist = workingDist;
+//                            closestCard = card;
+//                        }
+//                    }
+//                }
+//            }
 
-            //Check the top piles for the distance
-            for (Pile topPile : topPiles) {
-                if(topPile.size() > 0) {
-                    for (Card card : topPile) {
-                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
-                        if (workingDist < shortestDist && !card.isFaceDown()) {
-                            shortestDist = workingDist;
-                            closestCard = card;
-                        }
-                    }
-                }
-            }
+//            //Check the top piles for the distance
+//            for (Pile topPile : topPiles) {
+//                if(topPile.size() > 0) {
+//                    for (Card card : topPile) {
+//                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+//                        if (workingDist < shortestDist && !card.isFaceDown()) {
+//                            shortestDist = workingDist;
+//                            closestCard = card;
+//                        }
+//                    }
+//                }
+//            }
 
             //Check the discard pile for the distance
             if(discardPile.size() > 0) {
@@ -365,8 +358,7 @@ public class SolitairePanel extends JPanel {
                     closestCard = playableDiscard.get(0);
                 }
             }
-
-            return closestCard;
+            System.out.println(closestCard.getIndex() + closestCard.getSuit());
         }
 
         //Returns the distance between two given points
@@ -375,7 +367,23 @@ public class SolitairePanel extends JPanel {
             return (int)Math.round(Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2)));
         }
 
-        //Verify the chosen cards are opposite suits
+        private Card checkPile(ArrayList<Pile> Pile, Point mousePoint, Card closestCard) {
+            for (Pile pile : Pile) {
+                if(pile.size() > 0) {
+                    for (Card card : pile) {
+                        int workingDist = dist(mousePoint.x, mousePoint.y, card.getLocation().x, card.getLocation().y);
+                        if (workingDist < shortestDist && !card.isFaceDown()) {
+                            shortestDist = workingDist;
+                            closestCard = card;
+                        }
+                    }
+                }
+            }
+
+            return closestCard;
+        }
+
+        //Returns true if the chosen cards are opposite suits
         private boolean checkCardSuits(String card1Suit, String card2Suit) {
             boolean isMatch = false;
             switch(card1Suit) {

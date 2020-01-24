@@ -7,21 +7,25 @@ import java.io.File;
 import java.io.IOException;
 
 public class Card {
-    private String index;
+    private int index;
     private String suit;
     private Point location;
     private BufferedImage img;
     private boolean isFaceDown;
 
-    public Card(String index, String suit) throws IOException {
+    public Card(int index, String suit) {
         this.index = index;
         this.suit = suit.toUpperCase();
 
-        File file = new File("src//img//cards//" + index + suit.toUpperCase() + ".png");
-        img = ImageIO.read(file);
+        try {
+            File file = new File("src//img//cards//" + index + suit.toUpperCase() + ".png");
+            img = ImageIO.read(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public String getIndex() {
+    public int getIndex() {
         return index;
     }
 
@@ -37,15 +41,23 @@ public class Card {
         return isFaceDown;
     }
 
-    public void setFaceDown(boolean faceDown) throws IOException {
+    public void setFaceDown(boolean faceDown) {
         isFaceDown = faceDown;
 
         if(isFaceDown) {
-            File file = new File("src//img//cards//blue_back.png");
-            img = ImageIO.read(file);
+            try {
+                File file = new File("src//img//cards//blue_back.png");
+                img = ImageIO.read(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else {
-            File file = new File("src//img//cards//" + index + suit.toUpperCase() + ".png");
-            img = ImageIO.read(file);
+            try {
+                File file = new File("src//img//cards//" + index + suit.toUpperCase() + ".png");
+                img = ImageIO.read(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
