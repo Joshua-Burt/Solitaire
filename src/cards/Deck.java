@@ -1,6 +1,5 @@
 package cards;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -29,7 +28,7 @@ public class Deck extends ArrayList<Card> {
     public void shuffle() {
         Random rand = new Random();
 
-        for (int i = 0; i < this.size(); i++) {
+        for(int i = 0; i < this.size(); i++) {
             int cardToSwapIndex = rand.nextInt(this.size());
             Card temp = this.get(cardToSwapIndex);
             this.set(cardToSwapIndex, this.get(i));
