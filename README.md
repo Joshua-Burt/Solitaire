@@ -1,4 +1,4 @@
 # Solitaire-Solver
-A Klondike Solitaire game, with a built in solver using recursion. 
+A basic Klondike Solitaire game.
 
 Card images from http://acbl.mybigcommerce.com/52-playing-cards/
